@@ -1,15 +1,16 @@
 blueprint:
-  name: Sync Climate Settings
+  name: Sync Sensor to Climate Entities
   description: >
-    Sync target temperature and HVAC mode from one climate entity to others.
-    Triggers when the source entity changes state.
+    Set target temperature on climate entities when a numeric sensor changes.
+    Useful when a wall panel or input_number is used to control climate setpoints.
   domain: automation
   input:
-    source_climate:
-      name: Source Climate Entity
+    source_sensor:
+      name: Source Temperature Sensor
       selector:
         entity:
-          domain: climate
+          domain: sensor
+          device_class: temperature
     target_climates:
       name: Target Climate Entities
       selector:
@@ -19,26 +20,17 @@ blueprint:
 
 trigger:
   - platform: state
-    entity_id: !input source_climate
-    attribute: temperature
-  - platform: state
-    entity_id: !input source_climate
-    attribute: hvac_mode
+    entity_id: !input source_sensor
 
-condition: []
+condition:
+  - condition: template
+    value_template: >
+      {{ trigger.to_state.state | float(default=0) > 0 }}
 
 action:
-  - variables:
-      temp: "{{ state_attr(source_climate, 'temperature') }}"
-      mode: "{{ state_attr(source_climate, 'hvac_mode') }}"
   - service: climate.set_temperature
     data:
-      temperature: "{{ temp }}"
-    target:
-      entity_id: !input target_climates
-  - service: climate.set_hvac_mode
-    data:
-      hvac_mode: "{{ mode }}"
+      temperature: "{{ states(source_sensor) | float }}"
     target:
       entity_id: !input target_climates
 

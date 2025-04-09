@@ -1,0 +1,45 @@
+blueprint:
+  name: Sync Climate Settings
+  description: >
+    Sync target temperature and HVAC mode from one climate entity to others.
+    Triggers when the source entity changes state.
+  domain: automation
+  input:
+    source_climate:
+      name: Source Climate Entity
+      selector:
+        entity:
+          domain: climate
+    target_climates:
+      name: Target Climate Entities
+      selector:
+        entity:
+          domain: climate
+          multiple: true
+
+trigger:
+  - platform: state
+    entity_id: !input source_climate
+    attribute: temperature
+  - platform: state
+    entity_id: !input source_climate
+    attribute: hvac_mode
+
+condition: []
+
+action:
+  - variables:
+      temp: "{{ state_attr(source_climate, 'temperature') }}"
+      mode: "{{ state_attr(source_climate, 'hvac_mode') }}"
+  - service: climate.set_temperature
+    data:
+      temperature: "{{ temp }}"
+    target:
+      entity_id: !input target_climates
+  - service: climate.set_hvac_mode
+    data:
+      hvac_mode: "{{ mode }}"
+    target:
+      entity_id: !input target_climates
+
+mode: queued

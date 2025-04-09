@@ -1,8 +1,8 @@
 blueprint:
-  name: Sync Sensor to Climate Entities
+  name: Sync Sensor Value to Climate Setpoints
   description: >
-    Set target temperature on climate entities when a numeric sensor changes.
-    Useful when a wall panel or input_number is used to control climate setpoints.
+    Use a sensor (e.g., input_number, MQTT, external system) to control one or more climate entities'
+    target temperature. This triggers when the sensor changes.
   domain: automation
   input:
     source_sensor:
@@ -10,7 +10,6 @@ blueprint:
       selector:
         entity:
           domain: sensor
-          device_class: temperature
     target_climates:
       name: Target Climate Entities
       selector:
